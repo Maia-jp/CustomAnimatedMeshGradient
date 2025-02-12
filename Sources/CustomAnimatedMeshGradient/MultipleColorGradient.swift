@@ -2,16 +2,16 @@
 //  SwiftUIView.swift
 //  CustomAnimatedMeshGradient
 //
-//  Created by Joao Maia on 05/02/25.
+//  Created by Joao Maia on 12/02/25.
 //
 
 import SwiftUI
 import Noise
 
 @available(iOS 18.0, *)
-public struct SingleColorMeshGradient: View {
-    let color: Color
+public struct MutipleColorGradient: View {
     let colorGenerator = GradientGenerator()
+    let meshGenerator = MeshGenerator()
     
     // Configuration parameters
     let animationSpeed: Double
@@ -25,26 +25,18 @@ public struct SingleColorMeshGradient: View {
     @State var n: Int
     @State private var isStatic: Bool = false
     
-    /// Initialize a SingleColorMeshGradient
-    /// - Parameters:
-    ///   - color: The base color for the gradient
-    ///   - n: Size of the mesh grid (default: 5)
-    ///   - animationSpeed: Speed of the animation (default: 1.0)
-    ///   - animationAmplitude: Amplitude of the wave animation (default: 0.1)
-    ///   - blurRadius: Blur radius for the secondary gradient (default: 30)
-    ///   - noiseOpacity: Opacity of the noise overlay (default: 0.4)
-    ///   - secondaryGradientOpacity: Opacity of the blurred secondary gradient (default: 1.0)
+    
     public init(
-        color: Color,
+        color: [Color],
         n: Int = 5,
         animationSpeed: Double = 1.0,
         animationAmplitude: Double = 0.1,
         blurRadius: Double = 30,
         noiseOpacity: Double = 0.4,
-        secondaryGradientOpacity: Double = 1.0
+        secondaryGradientOpacity: Double = 0
     ) {
-        self.color = color
-        self.n = n
+        self.colors = color
+        self.n = n ?? color.count
         self.animationSpeed = animationSpeed
         self.animationAmplitude = animationAmplitude
         self.blurRadius = blurRadius
@@ -65,9 +57,8 @@ public struct SingleColorMeshGradient: View {
                     
                     // Only animate non-vertex points
                     if row > 0 && row < n-1 && col > 0 && col < n-1 {
-                        let xOffset = sin(t + Double(index)) * animationAmplitude
-                        let yOffset = cos(t + Double(index)) * animationAmplitude
-                        return SIMD2<Float>(point.x + Float(xOffset), point.y + Float(yOffset))
+                        return meshGenerator.animatePoint(point: point, index: index, time: t, pattern: .noise, amplitude: animationAmplitude, gridSize: n)
+                        
                     }
                     return point
                 }
@@ -79,6 +70,29 @@ public struct SingleColorMeshGradient: View {
                     .opacity(secondaryGradientOpacity)
                     .rotationEffect(.degrees(180))
                 
+                // Debug overlay to show points
+//                Canvas { context, size in
+//                    for (index, point) in animatedPoints.enumerated() {
+//                        let x = CGFloat(point.x) * size.width
+//                        let y = CGFloat(point.y) * size.height
+//                        
+//                        // Draw point
+//                        context.stroke(
+//                            Circle().path(in: CGRect(x: x - 2, y: y - 2, width: 4, height: 4)),
+//                            with: .color(.black)
+//                        )
+//                        
+//                        // Draw index number
+//                        let text = Text("  \(index)")
+//                            .font(.system(size: 12))
+//                            .foregroundColor(.black)
+//                        context.draw(text, at: CGPoint(x: x + 5, y: y))
+//                    }
+//                    
+//                   
+//                    
+//                }
+                
                 
                 Noise(style: .random)
                     .monochrome()
@@ -87,29 +101,20 @@ public struct SingleColorMeshGradient: View {
             }
         }
         .onAppear {
-            colors = colorGenerator.generateMeshColors(using: color, size: n)
-            points = colorGenerator.generateUnitPoints(N: n)
+            let gridDimension = self.n
+            let totalPoints = gridDimension * gridDimension
+            if self.colors.count != totalPoints {
+                self.colors = (0..<totalPoints).map { _ in colors.randomElement() ?? .clear }
+            }
+            points = colorGenerator.generateUnitPoints(N: gridDimension)
         }
     }
 }
 
-
-// Example usage in preview
 #Preview {
     if #available(iOS 18.0, *) {
-        VStack {
-            SingleColorMeshGradient(color: Color(red: 0.35, green: 0.78, blue: 0.98))
-                .frame(height: 200)
-                .padding()
-            
-        }
+        MutipleColorGradient(color: [Color.red,Color.blue,Color.blue,Color.blue], n: 2,animationSpeed: 0.2,animationAmplitude: 0.1)
     } else {
         EmptyView()
-    }
-}
-
-extension Color {
-    var id: String {
-        return UUID().uuidString
     }
 }
