@@ -24,6 +24,7 @@ public struct MutipleColorGradient: View {
     @State var points: [SIMD2<Float>] = []
     @State var n: Int
     @State private var isStatic: Bool = false
+    private(set) public var showPoints: Bool
     
     
     public init(
@@ -33,7 +34,8 @@ public struct MutipleColorGradient: View {
         animationAmplitude: Double = 0.1,
         blurRadius: Double = 30,
         noiseOpacity: Double = 0.4,
-        secondaryGradientOpacity: Double = 0
+        secondaryGradientOpacity: Double = 0,
+        showPoints: Bool = false
     ) {
         self.colors = color
         self.n = n ?? color.count
@@ -42,6 +44,7 @@ public struct MutipleColorGradient: View {
         self.blurRadius = blurRadius
         self.noiseOpacity = noiseOpacity
         self.secondaryGradientOpacity = secondaryGradientOpacity
+        self.showPoints = showPoints
     }
     
     public var body: some View {
@@ -70,29 +73,26 @@ public struct MutipleColorGradient: View {
                     .opacity(secondaryGradientOpacity)
                     .rotationEffect(.degrees(180))
                 
-                // Debug overlay to show points
-//                Canvas { context, size in
-//                    for (index, point) in animatedPoints.enumerated() {
-//                        let x = CGFloat(point.x) * size.width
-//                        let y = CGFloat(point.y) * size.height
-//                        
-//                        // Draw point
-//                        context.stroke(
-//                            Circle().path(in: CGRect(x: x - 2, y: y - 2, width: 4, height: 4)),
-//                            with: .color(.black)
-//                        )
-//                        
-//                        // Draw index number
-//                        let text = Text("  \(index)")
-//                            .font(.system(size: 12))
-//                            .foregroundColor(.black)
-//                        context.draw(text, at: CGPoint(x: x + 5, y: y))
-//                    }
-//                    
-//                   
-//                    
-//                }
+                if showPoints {
+                    Canvas { context, size in
+                        for (index, point) in animatedPoints.enumerated() {
+                            let x = CGFloat(point.x) * size.width
+                            let y = CGFloat(point.y) * size.height
                 
+                            // Draw point
+                            context.stroke(
+                                Circle().path(in: CGRect(x: x, y: y, width: 20, height: 20)),
+                                with: .color(.black)
+                            )
+                
+                            // Draw index number
+                            let text = Text("  \(index)")
+                                .font(.system(size: 12))
+                                .foregroundColor(.black)
+                            context.draw(text, at: CGPoint(x: x+6, y: y+10))
+                        }
+                    }
+                }
                 
                 Noise(style: .random)
                     .monochrome()
@@ -109,11 +109,30 @@ public struct MutipleColorGradient: View {
             points = colorGenerator.generateUnitPoints(N: gridDimension)
         }
     }
+    
+    public func showPoints(_ show: Bool = true) -> MutipleColorGradient {
+        MutipleColorGradient(
+            color: self.colors,
+            n: self.n,
+            animationSpeed: self.animationSpeed,
+            animationAmplitude: self.animationAmplitude,
+            blurRadius: self.blurRadius,
+            noiseOpacity: self.noiseOpacity,
+            secondaryGradientOpacity: self.secondaryGradientOpacity,
+            showPoints: show
+        )
+    }
 }
 
 #Preview {
     if #available(iOS 18.0, *) {
-        MutipleColorGradient(color: [Color.red,Color.blue,Color.blue,Color.blue], n: 2,animationSpeed: 0.2,animationAmplitude: 0.1)
+        MutipleColorGradient(
+            color: ColorPalletes.darkRoastCoffee.colors,
+            n: 5,
+            animationSpeed: 0.2,
+            animationAmplitude: 0.1
+        )
+        .showPoints()
     } else {
         EmptyView()
     }
