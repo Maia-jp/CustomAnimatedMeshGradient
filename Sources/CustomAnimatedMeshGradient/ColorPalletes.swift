@@ -4,7 +4,8 @@ import Foundation
 public enum ColorPalletes {
     case darkRoastCoffee
     case skyfall
-    
+    case vanilla
+
     public var colors: [Color] {
         switch self {
         case .darkRoastCoffee:
@@ -21,6 +22,13 @@ public enum ColorPalletes {
                 Color(hex: "6D86CA"),
                 Color(hex: "5167B3"),
                 Color(hex: "34499B")
+            ]
+        case .vanilla:
+            return [
+                Color(hex: "F7F5F0"),
+                Color(hex: "E8E0D2"),
+                Color(hex: "D9CCB5"),
+                Color(hex: "C0B499")
             ]
         }
     }
