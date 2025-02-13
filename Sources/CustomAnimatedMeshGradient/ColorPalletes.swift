@@ -5,6 +5,7 @@ public enum ColorPalletes {
     case darkRoastCoffee
     case skyfall
     case vanilla
+    case indigo
 
     public var colors: [Color] {
         switch self {
@@ -29,6 +30,13 @@ public enum ColorPalletes {
                 Color(hex: "E8E0D2"),
                 Color(hex: "D9CCB5"),
                 Color(hex: "C0B499")
+            ]
+        case .indigo:
+            return [
+                Color(hex: "4B0082"),
+                Color(hex: "6A00A0"),
+                Color(hex: "8000BF"),
+                Color(hex: "9400D8")
             ]
         }
     }
